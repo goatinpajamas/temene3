@@ -1,0 +1,27 @@
+name: Temene
+options:
+  bundleIdPrefix: com.temene
+  deploymentTarget:
+    iOS: "16.0"
+packages:
+  TemeneCore:
+    path: .
+targets:
+  Temene:
+    type: application
+    platform: iOS
+    sources: [App/Sources, App/Resources]
+    dependencies:
+      - package: TemeneCore
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Temene
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.temene.app3
+        SWIFT_VERSION: "5.9"
+        GENERATE_INFOPLIST_FILE: YES
+        TARGETED_DEVICE_FAMILY: "1"
