@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Projectile motion</title><style>
+/* ---- looks: each one follows its STYLE.md colour logic ---- */
+body.look-chalk{--wall:#E9E2D0;--board:#1F3B30;--frame:#8A5A2B;--bw:8px;--rad:6px;--ink:#F2EFE4;--mut:#B9C4B8;--line:rgba(242,239,228,.13);--axis:#F2EFE4;--sig:#F2EFE4;--regf:rgba(242,239,228,.12);--acc:#F4A259;--ok:#F2EFE4;--no:#F3E39A;--pbg:#F2EFE4;--ptx:#1F3B30;--optbg:transparent;--fh:Caveat,'Comic Sans MS',cursive;--fb:Lexend,system-ui,sans-serif;--glow:none;--hsz:30px;--z0:rgba(242,239,228,.04);--z1:rgba(242,239,228,.12);--z2:rgba(242,239,228,.21);--z3:rgba(242,239,228,.32);--z4:rgba(242,239,228,.44);--shade:rgba(0,0,0,0);--tagbg:#F2EFE4;--tagtx:#1F3B30;--wtx:#14213D;--wmut:#4E5A4F}
+
+body.look-chalk{--ball:#F4A259}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--wall);color:var(--wtx);font:400 16px/1.5 var(--fb);transition:background-color .25s}
+.wrap{max-width:560px;margin:0 auto;padding:16px 14px 48px}
+h1{font:700 clamp(30px,9vw,42px)/1.05 var(--fh);margin:4px 0 4px}
+.sub{margin:0 0 12px;color:var(--wmut);font-size:15px}
+.vers,.tabs{display:flex;gap:8px;margin:0 0 10px}
+.vers button,.tab{flex:1;min-height:48px;border:2px solid var(--wtx);border-radius:12px;background:transparent;color:var(--wtx);font:500 14px/1.2 var(--fb);cursor:pointer;padding:6px}
+.tab{font-weight:600;font-size:15px}
+.vers button b{display:block;font-size:16px}
+.vers button[aria-pressed=true],.tab[aria-selected=true]{background:var(--wtx);color:var(--wall)}
+.tabs{position:sticky;top:0;z-index:5;padding:6px 0;background:var(--wall)}
+button:focus-visible,input:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+.score{margin:0 0 10px;font-size:14px;color:var(--wmut)}
+.now{margin:0 0 10px;font-size:14px;color:var(--wmut)}
+
+.card{background:var(--board);color:var(--ink);border:var(--bw) solid var(--frame);border-radius:var(--rad);padding:14px;margin:0 0 14px}
+body.look-chalk .card{box-shadow:inset 0 0 0 2px rgba(0,0,0,.25),0 3px 0 rgba(0,0,0,.25)}
+.card h2{font:700 var(--hsz)/1.15 var(--fh);margin:0 0 6px}
+.card p{margin:0 0 10px}
+svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--fb)}
+.g{filter:var(--glow)}
+.say{min-height:3.2em;font-weight:500}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}
+.chip{min-height:44px;padding:8px 12px;border:2px solid var(--ink);border-radius:999px;background:transparent;font:500 14px var(--fb);color:var(--ink);cursor:pointer}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--board)}
+.big{min-height:48px;padding:10px 16px;border:2px solid var(--pbg);border-radius:12px;background:var(--pbg);color:var(--ptx);font:600 16px var(--fb);cursor:pointer}
+.big.alt{background:transparent;color:var(--ink);border-color:var(--ink)}
+label.sl{display:block;font-weight:600;margin:6px 0 2px}
+input[type=range]{width:100%;height:44px;accent-color:var(--acc)}
+.read{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0}
+.read div{border:1px solid var(--line);border:1px solid color-mix(in srgb,var(--ink) 35%,transparent);border-radius:10px;padding:6px 8px}
+.read b{display:block;font:700 22px/1.1 var(--fh)}
+.read span{font-size:12px;color:var(--mut)}
+.opts{display:grid;gap:8px;margin:8px 0}
+.opt{min-height:48px;text-align:left;padding:10px 12px;border:2px solid var(--ink);border-radius:10px;background:var(--optbg);font:500 15px/1.3 var(--fb);color:var(--ink);cursor:pointer}
+.opt.ok{border-color:var(--ok);border-width:3px}
+.opt.ok::before{content:"\2713  "}
+.opt.no{border-style:dashed;border-color:var(--no);color:var(--no)}
+.opt.no::before{content:"\2715  "}
+.opts.off .opt{cursor:default}
+.fb{margin:6px 0 0;font-weight:500}
+.fb.ok{color:var(--ok)}.fb.no{color:var(--no)}
+table{border-collapse:collapse;width:100%;font-size:14px;margin:6px 0}
+td,th{border:1px solid color-mix(in srgb,var(--ink) 40%,transparent);padding:6px 8px;text-align:left}
+tr.best td{font-weight:700;background:color-mix(in srgb,var(--acc) 22%,transparent)}
+.am{font-family:'Noto Sans Ethiopic',var(--fb)}
+.note{font-size:13px;color:var(--wmut)}
+
+/* svg parts */
+.gl{stroke:var(--line);stroke-width:1}
+.axl{stroke:var(--axis);stroke-width:2}
+.tk{fill:var(--mut);font-size:11px}
+.reg{fill:var(--regf);stroke:var(--sig);stroke-width:2}
+.con{stroke:var(--sig);stroke-width:1.5;stroke-dasharray:5 4;opacity:.85;fill:none}
+.cn{fill:var(--board);stroke:var(--sig);stroke-width:2}
+.live{stroke:var(--acc);stroke-width:3.5;stroke-linecap:round;fill:none}
+.live.off{stroke:var(--mut);stroke-dasharray:6 5}
+.hit{fill:var(--acc);fill-opacity:.3;stroke:var(--acc);stroke-width:3}
+.z0{fill:var(--z0)}.z1{fill:var(--z1)}.z2{fill:var(--z2)}.z3{fill:var(--z3)}.z4{fill:var(--z4)}
+.ter{fill:none;stroke:var(--sig);stroke-width:2.5;stroke-linejoin:round}
+.thr{stroke:var(--sig);stroke-width:1;stroke-dasharray:3 4;opacity:.55}
+.shade{fill:var(--shade)}
+.pt{fill:var(--acc);stroke:var(--board);stroke-width:2}
+.tg{fill:var(--tagbg)}.tt{fill:var(--tagtx);font-size:12px;font-weight:600}
+.zh{fill:var(--acc);fill-opacity:.22}
+.hk{fill:var(--acc);stroke:var(--board);stroke-width:2.5}
+.hkr{fill:none;stroke:var(--acc);stroke-width:2;opacity:.7}
+.traj{fill:none;stroke:var(--sig);stroke-width:1.5;stroke-dasharray:3 5;opacity:.7}
+.trail{fill:none;stroke:var(--ball);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.ball{fill:var(--ball);stroke:var(--board);stroke-width:2}
+.mk{stroke:var(--acc);stroke-width:2;fill:none}
+.mt{fill:var(--acc);font-size:11px;font-weight:600}
+.gnd{stroke:var(--axis);stroke-width:2.5}
+.ctl{display:grid;grid-template-columns:1fr;gap:0}
+.go{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.wx>*{transition:opacity .5s}
+.wx .wf{fill:var(--acc)}
+.wx .ws{fill:none;stroke:var(--sig);stroke-width:2;stroke-linecap:round}
+.wx .wa{fill:none;stroke:var(--acc);stroke-width:2;stroke-linecap:round}
+.wx .wc{fill:var(--board);stroke:var(--sig);stroke-width:2;stroke-linejoin:round}
+.wx .wd{fill:var(--sig)}
+.wx>g.off *{animation-play-state:paused!important}
+.fg{fill:none;stroke:var(--sig);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.fh{fill:var(--board);stroke:var(--sig);stroke-width:3}
+.patch{fill:var(--board)}
+.stone{fill:var(--ball);stroke:var(--board);stroke-width:1.5;stroke-linejoin:round}
+@media (prefers-reduced-motion:no-preference){
+.wsun .rays{transform-box:fill-box;transform-origin:center;animation:spin 16s linear infinite}
+.wheat{animation:rise 2.6s ease-in infinite}
+.wflame{transform-box:fill-box;transform-origin:50% 100%;animation:flick .5s ease-in-out infinite}
+.wwind{stroke-dasharray:10 10;animation:drift 1.4s linear infinite}
+.wcl{animation:cloudm 7s ease-in-out infinite}
+.wrain{animation:rainf 1s linear infinite}
+.wsnow{animation:fall 3.4s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes rise{0%{transform:translateY(8px);opacity:0}30%{opacity:.9}100%{transform:translateY(-14px);opacity:0}}
+@keyframes flick{0%,100%{transform:scale(1,1)}50%{transform:scale(.8,1.3)}}
+@keyframes drift{to{stroke-dashoffset:-40}}
+@keyframes cloudm{0%,100%{transform:translateX(0)}50%{transform:translateX(9px)}}
+@keyframes rainf{0%{transform:translateY(-6px);opacity:0}20%{opacity:.9}100%{transform:translateY(34px);opacity:0}}
+@keyframes fall{0%{transform:translateY(-8px);opacity:0}12%{opacity:1}100%{transform:translateY(90px);opacity:0}}
+}
+@media (prefers-reduced-motion:no-preference){.pop{animation:pop .3s ease-out}@keyframes pop{from{transform:scale(.98);opacity:.6}to{transform:none;opacity:1}}}
+.wrap{padding-top:12px}</style></head><body class="look-chalk"><div class="wrap"><section id="pP" role="tabpanel" aria-labelledby="tabP">
+  <div class="card">
+    <h2>Projectile motion: launch it</h2>
+    <p>Pick what to launch, set the angle and speed, then press Launch. Gravity pulls down at 10 m/s² and there is no air. The person is drawn bigger than real so you can see the swing; the physics starts at ground level.</p>
+    <svg id="ph" viewBox="0 0 320 214" role="img" aria-label="Path of a launched ball with its highest point and landing distance"></svg>
+    <div class="row" id="objs" role="group" aria-label="Object">
+      <button type="button" class="chip" id="oBall" aria-pressed="true">Kick a football</button>
+      <button type="button" class="chip" id="oStone" aria-pressed="false">Toss a stone</button>
+    </div>
+    <label class="sl" for="pa">Angle <span id="pav"></span>°</label>
+    <input id="pa" type="range" min="5" max="85" step="5" value="30">
+    <label class="sl" for="pv">Speed <span id="pvv"></span> m/s</label>
+    <input id="pv" type="range" min="10" max="30" step="1" value="20">
+    <div class="go"><button type="button" class="big" id="launch">&#9654; Launch</button></div>
+    <p class="say" id="pSay"></p>
+    <div class="read">
+      <div><b id="pR">0</b><span>range (m)</span></div>
+      <div><b id="pH">0</b><span>highest point (m)</span></div>
+      <div><b id="pT">0</b><span>time in air (s)</span></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Exam practice</h2>
+    <p id="pQ"></p>
+    <div class="opts" id="pO"></div>
+    <p class="fb" id="pFb" aria-live="polite"></p>
+    <button class="big" id="pNext">Next question</button>
+  </div>
+  <p class="note">This uses g = 10 m/s², common in school problems; some textbooks use 9.8. Ignoring air resistance, range = v² × sin 2θ ÷ g.</p>
+</section></div><script>(function(){var D=document;
+function $(s){return D.querySelector(s);}
+function NS(t,a,p){var e=D.createElementNS('http://www.w3.org/2000/svg',t);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e;}
+var RM=false;try{RM=matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){}
+var tries=0,firsts=0;function scoreUpd(){}
+function T(p,x,y,s,a){var e=NS('text',{x:x,y:y,'text-anchor':a||'start',class:'tk'},p);e.textContent=s;return e;}
+function post(m){try{if(window.ReactNativeWebView)window.ReactNativeWebView.postMessage(JSON.stringify(m));else if(window.parent!==window)window.parent.postMessage(m,'*');}catch(e){}}
+function quiz(box,fb,list,right,why,onDone){
+  box.innerHTML='';box.classList.remove('off');fb.textContent='';fb.className='fb';
+  var first=true,done=false;
+  list.forEach(function(t,i){
+    var b=D.createElement('button');b.className='opt';b.type='button';b.textContent=t;
+    b.onclick=function(){
+      if(done)return;
+      if(i===right){
+        done=true;box.classList.add('off');b.classList.add('ok');
+        if(first)firsts++;tries++;post({type:'answered',firstTry:first});
+        fb.className='fb ok pop';fb.textContent=(first?'Right first try. ':'Right. ')+why;
+        if(onDone)onDone();
+      }else{
+        b.classList.add('no');b.disabled=true;first=false;
+        fb.className='fb no';fb.textContent='Not that one. Look at the picture and try again.';
+      }
+    };
+    box.appendChild(b);
+  });
+}
+
+/* ---- PHYSICS: projectile motion with a person ---- */
+var PH=$('#ph'),GR=10,fly=null,obj='ball',BR=6;
+function PX(x){return 52+x*2.9;}function PY(y){return 176-y*3;}function PB(y){return PY(y)-BR;}
+function phCalc(){var th=+$('#pa').value*Math.PI/180,v=+$('#pv').value;
+  return {vx:v*Math.cos(th),vy:v*Math.sin(th),T:2*v*Math.sin(th)/GR,R:v*v*Math.sin(2*th)/GR,H:Math.pow(v*Math.sin(th),2)/(2*GR)};}
+function r1(n){return Math.round(n*10)/10;}
+function phBase(){
+  PH.innerHTML='';var i;
+  for(i=0;i<=9;i++)NS('line',{x1:PX(i*10),y1:PY(0),x2:PX(i*10),y2:PY(45),class:'gl'},PH);
+  for(i=1;i<=4;i++)NS('line',{x1:PX(0),y1:PY(i*10),x2:PX(92),y2:PY(i*10),class:'gl'},PH);
+  NS('line',{x1:4,y1:PY(0),x2:PX(92),y2:PY(0),class:'gnd g'},PH);
+  for(i=1;i<=9;i++)T(PH,PX(i*10),PY(0)+15,i*10,'middle');
+  for(i=1;i<=4;i++)T(PH,PX(92)+2,PY(i*10)+4,i*10,'end');
+  T(PH,PX(92),PY(0)+30,'metres','end');
+  NS('g',{id:'phFig'},PH);
+  NS('g',{id:'phLive'},PH);
+}
+function pt(c,t){return [c.vx*t,c.vy*t-GR*t*t/2];}
+function ease(u){return u*u*(3-2*u);}
+/* swing angle in degrees: u 0..1 -> wind back (to B) for 45% then swing to the release pose (F) */
+var POSE={ball:{B:-50,F:38},stone:{B:-55,F:18.4}};
+function swing(u){var P=POSE[obj];return u<.45?P.F+(P.B-P.F)*ease(u/.45):P.B+(P.F-P.B)*ease((u-.45)/.55);}
+function drawFig(u){
+  var g=$('#phFig');g.innerHTML='';var a=swing(u)*Math.PI/180,sn=Math.sin(a),cs=Math.cos(a);
+  if(obj==='ball'){
+    NS('circle',{cx:34,cy:122,r:6,class:'fh'},g);
+    NS('path',{d:'M34,128 L34,148 L34,176 M34,134 L24,147 M34,134 L45,144',class:'fg'},g);
+    NS('path',{d:'M34,148 L'+(34+29*sn).toFixed(1)+','+(148+29*cs).toFixed(1),class:'fg'},g);
+  }else{
+    NS('circle',{cx:46,cy:129,r:6,class:'fh'},g);
+    NS('path',{d:'M42,141 L36,156 L36,176 M36,156 L30,176',class:'fg'},g);
+    NS('path',{d:'M42,141 L'+(42+31.6*sn).toFixed(1)+','+(141+31.6*cs).toFixed(1),class:'fg'},g);
+    NS('path',{d:'M36,156 L42,141 L44,135',class:'fg'},g);
+  }
+}
+function handPos(u){var a=swing(u)*Math.PI/180;
+  return obj==='ball'?[34+29*Math.sin(a),148+29*Math.cos(a)]:[42+31.6*Math.sin(a),141+31.6*Math.cos(a)];}
+function drawBall(g,x,y,rot){
+  var b=NS('g',{transform:'translate('+x.toFixed(1)+','+y.toFixed(1)+') rotate('+(rot||0).toFixed(0)+')'},g);
+  if(obj==='ball'){
+    NS('circle',{r:BR,class:'ball'},b);
+    NS('path',{d:'M0,-2.5 L2.4,-0.8 L1.5,2 L-1.5,2 L-2.4,-0.8 Z',class:'patch'},b);
+    NS('path',{d:'M0,-6 L0,-2.5 M5.7,-1.8 L2.4,-0.8 M3.5,4.8 L1.5,2 M-3.5,4.8 L-1.5,2 M-5.7,-1.8 L-2.4,-0.8',class:'mk',style:'stroke:var(--board);stroke-width:1.2'},b);
+  }else{
+    NS('polygon',{points:'-5,-1 -2,-5 3,-4.5 5.5,0 3,4.5 -3,5',class:'stone'},b);
+  }
+}
+/* ballT: seconds of flight (undefined = on the ground / in hand); u: swing progress */
+function phDraw(ballT,u){
+  var c=phCalc(),live=$('#phLive');live.innerHTML='';
+  if(u===undefined)u=1;
+  drawFig(u);
+  $('#pav').textContent=$('#pa').value;$('#pvv').textContent=$('#pv').value;
+  $('#pR').textContent=r1(c.R);$('#pH').textContent=r1(c.H);$('#pT').textContent=r1(c.T);
+  var d='',k,N=48;for(k=0;k<=N;k++){var q=pt(c,c.T*k/N);d+=(k?'L':'M')+PX(q[0]).toFixed(1)+','+PB(Math.max(0,q[1])).toFixed(1);}
+  NS('path',{d:d,class:'traj'},live);
+  var ax=PX(c.R/2),ay=PB(c.H);
+  NS('path',{d:'M'+(ax-5)+','+ay+' L'+(ax+5)+','+ay+' M'+ax+','+(ay-5)+' L'+ax+','+(ay+5),class:'mk'},live);
+  var apex=T(live,ax,ay-9,r1(c.H)+' m','middle');apex.setAttribute('class','mt');
+  var lx=PX(c.R),la=lx>260?'end':'middle';
+  NS('line',{x1:lx,y1:PY(0)-6,x2:lx,y2:PY(0)+6,class:'mk'},live);
+  var lt=T(live,lx+(la==='end'?4:0),PY(0)-14,r1(c.R)+' m',la);lt.setAttribute('class','mt');
+  if(ballT!==undefined){
+    var tr='',m=Math.max(2,Math.round(48*ballT/c.T));for(k=0;k<=m;k++){var w=pt(c,ballT*k/m);tr+=(k?'L':'M')+PX(w[0]).toFixed(1)+','+PB(Math.max(0,w[1])).toFixed(1);}
+    NS('path',{d:tr,class:'trail g'},live);
+    var b=pt(c,ballT);drawBall(live,PX(b[0]),PB(Math.max(0,b[1])),360*ballT/c.T*(obj==='ball'?2:3));
+    return b;
+  }
+  if(obj==='ball')drawBall(live,PX(0),PB(0),0);
+  else{var h=handPos(u);drawBall(live,h[0],h[1],0);}
+}
+function stopLaunch(){if(fly){cancelAnimationFrame(fly.id);fly=null;}}
+function phIdle(){stopLaunch();phDraw();$('#pSay').textContent='Dotted line: the path for these settings. Press Launch and watch the swing.';}
+function launch(){
+  stopLaunch();var c=phCalc(),t0=null,wind=700,slow=700;
+  if(RM){phDraw(c.T,1);$('#pSay').textContent='Landed after '+r1(c.T)+' s, '+r1(c.R)+' m away.';return;}
+  fly={};
+  function f(ts){
+    if(!fly)return;if(t0===null)t0=ts;
+    var el=ts-t0;
+    if(el<wind){phDraw(undefined,el/wind);$('#pSay').textContent='Winding up...';fly.id=requestAnimationFrame(f);return;}
+    var t=Math.min(c.T,(el-wind)/slow),b=phDraw(t,1);
+    $('#pSay').textContent='t = '+r1(t)+' s, height '+r1(Math.max(0,b[1]))+' m, distance '+r1(b[0])+' m';
+    if(t<c.T)fly.id=requestAnimationFrame(f);else{fly=null;$('#pSay').textContent='Landed after '+r1(c.T)+' s, '+r1(c.R)+' m away. Try 60° next to compare.';}
+  }
+  fly.id=requestAnimationFrame(f);
+}
+function setObj(o){obj=o;$('#oBall').setAttribute('aria-pressed',o==='ball');$('#oStone').setAttribute('aria-pressed',o==='stone');phIdle();}
+$('#oBall').onclick=function(){setObj('ball');};$('#oStone').onclick=function(){setObj('stone');};
+$('#pa').oninput=phIdle;$('#pv').oninput=phIdle;$('#launch').onclick=launch;
+var PQ=[
+ {q:'Same launch speed, no air. Which angle gives the longest range?',o:['30°','45°','60°','75°'],r:1,w:'Range is v² × sin 2θ ÷ g, biggest when 2θ = 90°, so θ = 45°. Try it with the sliders.'},
+ {q:'A ball is thrown at 20 m/s at 30°. At its highest point, what is its vertical velocity?',o:['0 m/s','10 m/s','17.3 m/s','20 m/s'],r:0,w:'At the top it stops rising, so the vertical velocity is 0. Only the horizontal part, 17.3 m/s, remains.'},
+ {q:'Same speed. You launch at 30° once and 60° once. Which lands farther?',o:['30°','60°','Both land the same distance','It depends on the mass'],r:2,w:'sin 60° = sin 120°, so complementary angles (adding to 90°) give the same range. The 60° throw just goes higher.'}
+];
+var pi=0;
+function pAsk(){var q=PQ[pi];$('#pQ').textContent=q.q;$('#pNext').hidden=true;
+  quiz($('#pO'),$('#pFb'),q.o,q.r,q.w,function(){$('#pNext').hidden=false;$('#pNext').textContent=pi<PQ.length-1?'Next question':'Start again';});}
+$('#pNext').onclick=function(){pi=(pi+1)%PQ.length;pAsk();};
+
+phBase();phIdle();pAsk();})();</script></body></html>
