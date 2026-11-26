@@ -8,6 +8,12 @@ struct TemeneApp: App {
     var body: some Scene {
         WindowGroup {
             TabView {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("Projectile motion").font(.title.bold()).foregroundStyle(Theme.ink).padding(16)
+                    LessonView(resource: "projectile") { first in store.answered(.physics, firstTry: first) }
+                }
+                .background(Theme.wall)
+                .tabItem { Label("Lesson", systemImage: "play.circle") }
                 PracticeView(title: "Projectile motion", questions: DemoQuestions.projectiles) { q, a in
                     store.answered(q.subject, firstTry: a.isFirstTry(for: q))
                 }
