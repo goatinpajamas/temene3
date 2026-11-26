@@ -2,7 +2,7 @@ import SwiftUI
 import TemeneCore
 
 struct Road600View: View {
-    let progress: Progress
+    let progress: StudyProgress
 
     var body: some View {
         let est = progress.estimate

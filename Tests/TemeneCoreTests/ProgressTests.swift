@@ -3,7 +3,7 @@ import XCTest
 
 final class ProgressTests: XCTestCase {
     func testRecordAndEstimate() {
-        var p = Progress()
+        var p = StudyProgress()
         p.recordAnswer(subject: .physics, firstTry: true, today: 10)
         p.recordAnswer(subject: .physics, firstTry: false, today: 10)
         p.recordAnswer(subject: .maths, firstTry: true, today: 11)
@@ -13,13 +13,13 @@ final class ProgressTests: XCTestCase {
     }
 
     func testRoundTripAndBadData() throws {
-        var p = Progress()
+        var p = StudyProgress()
         p.recordAnswer(subject: .physics, firstTry: true, today: 3)
-        XCTAssertEqual(Progress.decode(try JSONEncoder().encode(p)), p)
-        XCTAssertEqual(Progress.decode(nil), Progress())
-        XCTAssertEqual(Progress.decode(Data("{oops".utf8)), Progress())
+        XCTAssertEqual(StudyProgress.decode(try JSONEncoder().encode(p)), p)
+        XCTAssertEqual(StudyProgress.decode(nil), StudyProgress())
+        XCTAssertEqual(StudyProgress.decode(Data("{oops".utf8)), StudyProgress())
         var bad = p
         bad.tallies[.maths] = Tally(firstTry: 5, answered: 2)
-        XCTAssertNil(Progress.decode(try JSONEncoder().encode(bad)).tallies[.maths])
+        XCTAssertNil(StudyProgress.decode(try JSONEncoder().encode(bad)).tallies[.maths])
     }
 }

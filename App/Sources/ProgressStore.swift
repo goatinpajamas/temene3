@@ -5,9 +5,9 @@ import TemeneCore
 @MainActor
 final class ProgressStore: ObservableObject {
     private let key = "temene.progress.v1"
-    @Published private(set) var progress: Progress
+    @Published private(set) var progress: StudyProgress
 
-    init() { progress = Progress.decode(UserDefaults.standard.data(forKey: key)) }
+    init() { progress = StudyProgress.decode(UserDefaults.standard.data(forKey: key)) }
 
     func answered(_ subject: Subject, firstTry: Bool) {
         progress.recordAnswer(subject: subject, firstTry: firstTry, today: dayNumber(Date()))

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Everything the app remembers about a student's practice.
-public struct Progress: Codable, Equatable, Sendable {
+public struct StudyProgress: Codable, Equatable, Sendable {
     public var version = 1
     public var stream: Stream = .natural
     public var studyDays: [Int] = []
@@ -20,8 +20,8 @@ public struct Progress: Codable, Equatable, Sendable {
     public var estimate: Estimate { TemeneCore.estimate(stream.subjects.map { ($0, tallies[$0] ?? Tally()) }) }
 
     /// Decodes stored data; anything malformed or impossible starts fresh.
-    public static func decode(_ data: Data?) -> Progress {
-        guard let data, var p = try? JSONDecoder().decode(Progress.self, from: data), p.version == 1 else { return Progress() }
+    public static func decode(_ data: Data?) -> StudyProgress {
+        guard let data, var p = try? JSONDecoder().decode(StudyProgress.self, from: data), p.version == 1 else { return StudyProgress() }
         p.tallies = p.tallies.filter { $0.value.firstTry >= 0 && $0.value.firstTry <= $0.value.answered }
         return p
     }
