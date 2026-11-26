@@ -1,0 +1,25 @@
+name: Checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  swift:
+    # macOS runners are free for public repositories.
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Swift package tests
+        if: hashFiles('Package.swift') != ''
+        run: swift test
+      - name: Build the iOS app for the simulator (no signing)
+        if: hashFiles('project.yml') != ''
+        run: |
+          brew install xcodegen
+          xcodegen generate
+          xcodebuild -project Temene.xcodeproj -scheme Temene \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO build | tail -n 40
+          test "${PIPESTATUS[0]}" -eq 0
